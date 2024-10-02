@@ -41,6 +41,7 @@ export class LanguagesService {
   }
 
   async remove(languageID: number) {
-    return await this.languagesRepository.delete({ language_id: languageID });
+    await this.languagesRepository.delete({ language_id: languageID });
+    return { deleted: true };
   }
 }

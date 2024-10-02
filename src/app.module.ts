@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { LanguagesModule } from './languages/languages.module';
 import { ProblemsModule } from './problems/problems.module';
 import { TestcasesModule } from './testcases/testcases.module';
+import { ProblemTypesModule } from './problem-types/problem-types.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { TestcasesModule } from './testcases/testcases.module';
     UsersModule,
     LanguagesModule,
     ProblemsModule,
-    TestcasesModule
+    TestcasesModule,
+    ProblemTypesModule
   ],
   controllers: [AppController],
   providers: [AppService],

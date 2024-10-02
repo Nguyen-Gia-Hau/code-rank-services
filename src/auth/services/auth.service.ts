@@ -47,48 +47,44 @@ export class AuthService {
   }
 
   async register(registerAuthDto: RegisterAuthDto, userAgent: string, userIpAddress: string) {
-    try {
-      const existingUserById = await this.usersService.findOne({ username: registerAuthDto.username });
-      if (existingUserById) {
-        throw new BadRequestException('User ID already registered.');
-      }
+    const existingUserById = await this.usersService.findOne({ username: registerAuthDto.username });
+    if (existingUserById) {
+      throw new BadRequestException('User ID already registered.');
+    }
 
-      const existingUserByEmail = await this.usersService.findOne({ email: registerAuthDto.email });
-      if (existingUserByEmail) {
-        throw new BadRequestException('Email already registered.');
-      }
+    const existingUserByEmail = await this.usersService.findOne({ email: registerAuthDto.email });
+    if (existingUserByEmail) {
+      throw new BadRequestException('Email already registered.');
+    }
 
-      // hash password
-      const salt = await bcrypt.genSalt();
-      const passwordHash = await bcrypt.hash(registerAuthDto.password, salt);
+    // hash password
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(registerAuthDto.password, salt);
 
-      //create new user
-      const createUserDto = new CreateUserDto()
-      createUserDto.password = passwordHash;
-      createUserDto.username = registerAuthDto.username;
-      createUserDto.email = registerAuthDto.email;
+    //create new user
+    const createUserDto = new CreateUserDto()
+    createUserDto.password = passwordHash;
+    createUserDto.username = registerAuthDto.username;
+    createUserDto.email = registerAuthDto.email;
 
-      const savedUser = await this.usersService.create(createUserDto);
-      if (!savedUser) {
-        throw new HttpException('User creation failed', HttpStatus.BAD_REQUEST);
-      }
+    const savedUser = await this.usersService.create(createUserDto);
+    if (!savedUser) {
+      throw new HttpException('User creation failed', HttpStatus.BAD_REQUEST);
+    }
 
-      const createLoginSession: CreateLoginTrackerAuthDto = {
-        user: savedUser,
-        userAgent,
-        userIpAddress
-      }
+    const createLoginSession: CreateLoginTrackerAuthDto = {
+      user: savedUser,
+      userAgent,
+      userIpAddress
+    }
 
-      const savedLoginSession = await this.logonTrackerService.createLoginSession(createLoginSession)
+    const savedLoginSession = await this.logonTrackerService.createLoginSession(createLoginSession)
 
-      const payload = { login_tracker_id: savedLoginSession.login_tracker_id }
-      const tokens = await this.generateToken(payload)
+    const payload = { login_tracker_id: savedLoginSession.login_tracker_id }
+    const tokens = await this.generateToken(payload)
 
-      return {
-        tokens
-      }
-    } catch (error) {
-      console.log(error)
+    return {
+      tokens
     }
   }
 

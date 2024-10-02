@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -16,6 +16,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const createdUser = this.usersRepository.create(createUserDto)
     const savedUser = await this.usersRepository.save(createdUser);
+    if (!savedUser) throw new ConflictException()
     await this.userProfileService.create(savedUser.user_id)
     return savedUser
   }
