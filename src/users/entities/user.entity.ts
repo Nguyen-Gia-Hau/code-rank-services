@@ -18,6 +18,9 @@ export class User {
   @Column({ type: 'varchar', length: 45 })
   username: string;
 
+  @Column({ type: 'enum', enum: ['student', 'admin'], default: 'student' })
+  role: 'student' | 'admin';
+
   @OneToOne(() => UserToken, userToken => userToken.user)
   userTokens: UserToken[];
 

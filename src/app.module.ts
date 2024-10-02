@@ -6,6 +6,9 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import mariaDBConfig from './Configuration/mariaDB.config';
 import { ConfigModule } from '@nestjs/config';
+import { LanguagesModule } from './languages/languages.module';
+import { ProblemsModule } from './problems/problems.module';
+import { TestcasesModule } from './testcases/testcases.module';
 
 @Module({
   imports: [
@@ -16,7 +19,10 @@ import { ConfigModule } from '@nestjs/config';
     TypeOrmModule.forRoot(mariaDBConfig()
     ),
     AuthModule,
-    UsersModule
+    UsersModule,
+    LanguagesModule,
+    ProblemsModule,
+    TestcasesModule
   ],
   controllers: [AppController],
   providers: [AppService],
