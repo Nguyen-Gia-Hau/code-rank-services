@@ -17,11 +17,12 @@ import { LoginTracker } from './entities/login.tracker.entity';
       global: true,
       secret: jwtConstants.secret,
       signOptions: {
-        expiresIn: '300s'
+        expiresIn: '1 days'
       }
     })
   ],
   controllers: [AuthController],
   providers: [AuthService, LoginTrackerService],
+  exports: [LoginTrackerService]
 })
 export class AuthModule { }

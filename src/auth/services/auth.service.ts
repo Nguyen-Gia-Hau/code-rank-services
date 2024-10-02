@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Param, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, Param, UnauthorizedException } from '@nestjs/common';
 import { SignInAuthDto } from '../dto/signIn-auth.dto';
 import { UsersService } from 'src/users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -8,9 +8,11 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserToken } from '../entities/token.entity';
 import { Repository } from 'typeorm';
-import { LogoutAuthDto } from '../dto/logout.auth.dto';
 import { LoginTrackerService } from './login.tracker.service';
 import { CreateLoginTrackerAuthDto } from '../dto/create-login-tracker-auth.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { NotFoundError } from 'rxjs';
+import { LoginTracker } from '../entities/login.tracker.entity';
 
 @Injectable()
 export class AuthService {
@@ -45,50 +47,87 @@ export class AuthService {
   }
 
   async register(registerAuthDto: RegisterAuthDto, userAgent: string, userIpAddress: string) {
-    const existingUserById = await this.usersService.findOne({ username: registerAuthDto.username });
-    if (existingUserById) {
-      throw new BadRequestException('User ID already registered.');
-    }
+    try {
+      const existingUserById = await this.usersService.findOne({ username: registerAuthDto.username });
+      if (existingUserById) {
+        throw new BadRequestException('User ID already registered.');
+      }
 
-    const existingUserByEmail = await this.usersService.findOne({ email: registerAuthDto.email });
-    if (existingUserByEmail) {
-      throw new BadRequestException('Email already registered.');
-    }
+      const existingUserByEmail = await this.usersService.findOne({ email: registerAuthDto.email });
+      if (existingUserByEmail) {
+        throw new BadRequestException('Email already registered.');
+      }
 
-    // hash password
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(registerAuthDto.password, salt);
+      // hash password
+      const salt = await bcrypt.genSalt();
+      const passwordHash = await bcrypt.hash(registerAuthDto.password, salt);
 
-    //create new user
-    const createUserDto = new CreateUserDto()
-    createUserDto.password = passwordHash;
-    createUserDto.username = registerAuthDto.username;
-    createUserDto.email = registerAuthDto.email;
+      //create new user
+      const createUserDto = new CreateUserDto()
+      createUserDto.password = passwordHash;
+      createUserDto.username = registerAuthDto.username;
+      createUserDto.email = registerAuthDto.email;
 
-    const savedUser = await this.usersService.create(createUserDto);
-    if (!savedUser) {
-      throw new HttpException('User creation failed', HttpStatus.BAD_REQUEST);
-    }
+      const savedUser = await this.usersService.create(createUserDto);
+      if (!savedUser) {
+        throw new HttpException('User creation failed', HttpStatus.BAD_REQUEST);
+      }
 
-    const createLoginSession: CreateLoginTrackerAuthDto = {
-      user: savedUser,
-      userAgent,
-      userIpAddress
-    }
+      const createLoginSession: CreateLoginTrackerAuthDto = {
+        user: savedUser,
+        userAgent,
+        userIpAddress
+      }
 
-    const savedLoginSession = await this.logonTrackerService.createLoginSession(createLoginSession)
+      const savedLoginSession = await this.logonTrackerService.createLoginSession(createLoginSession)
 
-    const payload = { login_tracker_id: savedLoginSession.login_tracker_id }
-    const tokens = await this.generateToken(payload)
+      const payload = { login_tracker_id: savedLoginSession.login_tracker_id }
+      const tokens = await this.generateToken(payload)
 
-    return {
-      tokens
+      return {
+        tokens
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
-  async logout(session_ID) {
-    console.log(session_ID)
+  async logout(session_ID: number) {
     return this.logonTrackerService.deleteOne({ login_tracker_id: session_ID })
+  }
+
+  async logoutAllDevice(userID: number, sessionID: number) {
+    const user = await this.usersService.findOne({ user_id: userID });
+    if (!user) throw new ConflictException();
+
+    const userSessions = await this.logonTrackerService.findAll({ user: user });
+
+    const deleted = await Promise.all(
+      userSessions.map(session => {
+        if (session.login_tracker_id != sessionID) {
+          return this.logonTrackerService.deleteOne({ login_tracker_id: session.login_tracker_id })
+        }
+      })
+    );
+
+    return deleted ? true : false
+  }
+
+  async resetPassword(userID: number, resetPasswordDto: ResetPasswordDto) {
+    const currentUser = this.usersService.findOne({ user_id: userID })
+    if (!currentUser) throw new ConflictException()
+
+    const isMath = await bcrypt.compare(resetPasswordDto.currentPassword, (await currentUser).password)
+    if (!isMath) throw new UnauthorizedException()
+
+    // hash password
+    const salt = await bcrypt.genSalt();
+    const newPasswordHash = await bcrypt.hash(resetPasswordDto.newPassword, salt);
+
+    const updated = await this.usersService.update(userID, { password: newPasswordHash })
+    if (!updated) throw new ConflictException()
+
+    return updated
   }
 
   async generateToken(payload: any) {

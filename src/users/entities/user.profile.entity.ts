@@ -31,6 +31,9 @@ export class UserProfile {
   @Column({ name: 'about', type: 'longtext', nullable: true })
   about: string;
 
+  @Column({ name: 'total_submission', type: 'int', width: 10, default: 0 })
+  totalSummission: number
+
   @OneToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;

@@ -8,12 +8,11 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsString()
-  @Length(8, 255) // Độ dài tối thiểu cho mật khẩu
-  password: string;
+  @Length(8, 255) password: string;
 
   @IsNotEmpty()
   @IsString()
-  @Length(1, 45) // Độ dài tối đa cho username
+  @Length(1, 45)
   username: string;
 }
 

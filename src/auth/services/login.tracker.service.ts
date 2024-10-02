@@ -24,6 +24,10 @@ export class LoginTrackerService {
     return await this.loginTrackerRepository.save(loginSession)
   }
 
+  async findAll(condition: Partial<LoginTracker>) {
+    return this.loginTrackerRepository.find({ where: condition, relations: ['user'] })
+  }
+
   async findOne(condition: Partial<LoginTracker>) {
     return await this.loginTrackerRepository.findOne({ where: condition, relations: ['user'] })
   }
