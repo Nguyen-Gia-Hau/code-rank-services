@@ -15,7 +15,7 @@ export class UsersController {
     const user = await this.usersService.findOne({ username: username });
     if (!user) throw new NotFoundException()
 
-    const userProfile = await this.usersProfileService.findOne({ userId: user.user_id })
+    const userProfile = await this.usersProfileService.findOne({ user_id: user.user_id })
     if (!userProfile) throw new NotFoundException()
 
     return userProfile

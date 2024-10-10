@@ -7,15 +7,16 @@ import { UserProfile } from './entities/user.profile.entity';
 import { UserProfilesService } from './services/user.profiles.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { Submission } from 'src/submissions/entities/submission.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserProfile]),
+    TypeOrmModule.forFeature([User, UserProfile, Submission]),
     forwardRef(() => AuthModule)
   ],
   controllers: [UsersController],
   providers: [UsersService, UserProfilesService, AuthGuard],
-  exports: [UsersService]
+  exports: [UsersService, UserProfilesService]
 })
 export class UsersModule { }

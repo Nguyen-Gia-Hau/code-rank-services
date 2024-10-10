@@ -10,6 +10,9 @@ import { LanguagesModule } from './languages/languages.module';
 import { ProblemsModule } from './problems/problems.module';
 import { TestcasesModule } from './testcases/testcases.module';
 import { ProblemTypesModule } from './problem-types/problem-types.module';
+import { SubmissionsModule } from './submissions/submissions.module';
+import { CodeRunnerService } from './code-runner/code-runner.service';
+import { ContestsModule } from './contests/contests.module';
 
 @Module({
   imports: [
@@ -24,9 +27,11 @@ import { ProblemTypesModule } from './problem-types/problem-types.module';
     LanguagesModule,
     ProblemsModule,
     TestcasesModule,
-    ProblemTypesModule
+    ProblemTypesModule,
+    SubmissionsModule,
+    ContestsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CodeRunnerService],
 })
 export class AppModule { }

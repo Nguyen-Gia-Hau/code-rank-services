@@ -4,7 +4,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserProfile } from '../entities/user.profile.entity';
-import { UpdateProfileDto } from '../dto/profile/update-profile.dto';
+import { UpdateProfileAllDto } from '../dto/profile/update-profile.all.dto';
 
 @Injectable()
 export class UserProfilesService {
@@ -14,7 +14,7 @@ export class UserProfilesService {
   ) {
   }
   async create(userID: number) {
-    const createdProfile = this.userProfileRepository.create({ userId: userID })
+    const createdProfile = this.userProfileRepository.create({ user_id: userID })
     const savedUser = await this.userProfileRepository.save(createdProfile)
     return savedUser
   }
@@ -27,15 +27,8 @@ export class UserProfilesService {
   }
 
 
-  async update(userID: number, updateProfileDto: UpdateProfileDto) {
-    const userProfile = await this.findOne({ userId: userID })
-
-    if (!userProfile) throw new NotFoundException(`User profile with ID ${userID} not found`)
-
-    // Update fields with values in DTO
-    Object.assign(userProfile, updateProfileDto)
-
-    // save change
-    return await this.userProfileRepository.save(userProfile)
+  async update(userID: number, updateProfileDto: UpdateProfileAllDto) {
+    return this.userProfileRepository.update({ user_id: userID }, updateProfileDto)
   }
+
 }

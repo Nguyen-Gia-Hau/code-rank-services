@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
       request['session_id'] = loginSession.login_tracker_id;
       request['user_id'] = loginSession.user.user_id;
       request['role'] = loginSession.user.role; // Assuming `role` is part of the user model
-
+      request['user'] = loginSession.user
       // Role check (for example, ensuring only admins can access a certain route)
       if (this.isRoleRequired(context)) {
         const requiredRole = this.getRequiredRole(context);
